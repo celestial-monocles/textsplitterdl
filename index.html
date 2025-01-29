@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Splitter</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    body {
+      font-family: Georgia, sans-serif;
+      background-color: #525253;
+      margin: 50px;
+      color: white;
+      position: relative;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    label {
+      margin-bottom: 10px;
+      font-size: 1.0em;
+      text-align: center;
+      width: 100%;
+    }
+    textarea,
+    input,
+    button {
+      width: 60%;
+      margin: 10px 0;
+      display: block;
+    }
+    textarea {
+      resize: vertical;
+    }
+	#splitNumber {
+	  padding: 10px;
+	  width: 5%;
+	  text-align: center;
+	}
+    button {
+      width: auto;
+      background-color: #D482DD;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #DFB4DA;
+    }
+    hr {
+      background-color: white;
+      margin-top: 2em;
+      margin-bottom: 2em;
+    }
+    #outputContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .output-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 60%;
+    }
+    .output-box {
+      width: 100%;
+      background-color: #E0D7DE;
+      resize: vertical;
+      margin-bottom: 10px;
+    }
+    .copy-button {
+      align-self: flex-end;
+      font-weight: bold;
+    }
+    .download-button {
+      display: block;
+      margin: 20px auto;
+      font-weight: bold;
+    }
+    @media (max-width: 768px) {
+      label,
+      textarea,
+      input,
+      button,
+      .output-container {
+        width: 100%;
+      }
+    }
+    h1,
+    h2 {
+      color: #DFB4DA;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Text Splitter</h1>
+
+  <div class="form-group">
+    <label for="inputText">Easily divide text into smaller parts, customize splits, add line gaps, and copy outputs.</label>
+    <textarea id="inputText" rows="10" placeholder="Paste your text here..."></textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="splitNumber">Enter number of splits:</label>
+    <input id="splitNumber" type="number" min="1" placeholder="2">
+    <label for="lineGap">Line Gaps</label>
+    <input id="lineGap" type="checkbox">
+    <button onclick="splitText()">Split Text</button>
+  </div>
+
+  <hr>
+
+  <h2>Split Text Outputs</h2>
+  <button id="downloadZip" class="download-button" style="display: none;" onclick="downloadAsZip()">Download All as ZIP</button>
+  <div id="outputContainer"></div>
+  
+  <script>
+    function splitText() {
+      const text = document.getElementById('inputText').value.trim();
+      let numSplits = parseInt(document.getElementById('splitNumber').value);
+      const lineGap = document.getElementById('lineGap').checked;
+      const outputContainer = document.getElementById('outputContainer');
+      outputContainer.innerHTML = '';
+
+      if (!text) {
+        document.getElementById('inputText').placeholder = "Please provide valid input text.";
+        return;
+      }
+
+      if (isNaN(numSplits) || numSplits < 1) {
+        numSplits = 2;
+      }
+
+      const lines = text.split('\n');
+      const chunkSize = Math.ceil(lines.length / numSplits);
+      let start = 0;
+
+      for (let i = 0; i < numSplits; i++) {
+        const chunk = lines.slice(start, start + chunkSize).join(lineGap ? '\n\n' : '\n');
+        start += chunkSize;
+
+        const container = document.createElement('div');
+        container.className = 'output-container';
+
+        const textBox = document.createElement('textarea');
+        textBox.className = 'output-box';
+        textBox.rows = 10;
+        textBox.readOnly = true;
+        textBox.value = chunk;
+
+        const copyButton = document.createElement('button');
+        copyButton.className = 'copy-button';
+        copyButton.textContent = 'Copy Text';
+        copyButton.onclick = () => copyToClipboard(copyButton, chunk);
+
+        container.appendChild(textBox);
+        container.appendChild(copyButton);
+        outputContainer.appendChild(container);
+      }
+      document.getElementById('downloadZip').style.display = 'block';
+    }
+
+    function copyToClipboard(button, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        button.textContent = 'Copied!';
+        setTimeout(() => {
+          button.textContent = 'Copy Text';
+        }, 2000);
+      }).catch(err => {
+        alert('Failed to copy text: ' + err);
+      });
+    }
+
+    function downloadAsZip() {
+      const zip = new JSZip();
+      const outputs = document.querySelectorAll('.output-box');
+      if (outputs.length === 0) return;
+      outputs.forEach((textarea, index) => {
+        zip.file(`split_${index + 1}.txt`, textarea.value);
+      });
+      zip.generateAsync({ type: "blob" }).then(blob => {
+        saveAs(blob, "split_texts.zip");
+      });
+    }
+  </script>
+</body>
+</html>
