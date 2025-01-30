@@ -57,6 +57,35 @@
       margin-top: 2em;
       margin-bottom: 2em;
     }
+	.split-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .split-group .row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .split-group label[for="lineGap"] {
+      font-size: 0.8em;
+      height: 7px;
+    }
+
+    .split-group input {
+      width: auto;
+      margin: 0;
+      height: 30px;
+      text-align: center;
+    }
+    .split-group button {
+      width: auto;
+      margin: 0;
+      font-weight: bold;
+    }
+	
     #outputContainer {
       display: flex;
       flex-direction: column;
@@ -191,11 +220,17 @@
     <textarea id="inputText" rows="10" placeholder="Paste your text here..."></textarea>
   </div>
 
-  <div class="form-group">
-    <label for="splitNumber">Enter number of splits:</label>
+  <div class="form-group split-group">
+    <div class="row">
+      <label for="splitNumber">Enter number of splits:</label>
+    </div>
     <input id="splitNumber" type="number" min="1" placeholder="2">
-    <label for="lineGap">Line Gaps</label>
-    <input id="lineGap" type="checkbox">
+
+    <div class="row">
+      <label for="lineGap">Line Gaps</label>
+      <input id="lineGap" type="checkbox">
+    </div>
+
     <button onclick="splitText()">Split Text</button>
   </div>
 
